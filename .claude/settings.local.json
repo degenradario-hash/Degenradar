@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(npm install:*)",
+      "Bash(npx next build)",
+      "Bash(npm run build:*)",
+      "Bash(npx next dev:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(dir:*)",
+      "Bash(while read f)",
+      "Bash(do ls -la \"$f\")",
+      "Bash(done)",
+      "Bash(sort:*)"
+    ]
+  }
+}

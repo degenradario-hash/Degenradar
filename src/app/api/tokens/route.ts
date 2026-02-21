@@ -1,123 +1,161 @@
 import { NextResponse } from 'next/server'
 
-const DEXSCREENER_BASE = 'https://api.dexscreener.com'
+const CG_BASE = 'https://api.coingecko.com/api/v3'
+const DEX_BASE = 'https://api.dexscreener.com'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
+  const view = searchParams.get('view') || 'top'       // top | trending | gainers | losers | new | search
   const query = searchParams.get('q') || ''
-  const chain = searchParams.get('chain') || 'all'
+  const page = parseInt(searchParams.get('page') || '1')
+  const perPage = Math.min(parseInt(searchParams.get('per_page') || '100'), 250)
+  const sortBy = searchParams.get('sort') || 'market_cap_desc'
 
   try {
-    let pairs: any[] = []
+    // ─── TOP / MAIN VIEW: CoinGecko markets ───
+    if (view === 'top' || view === 'gainers' || view === 'losers') {
+      let order = 'market_cap_desc'
+      if (view === 'gainers') order = 'market_cap_desc' // we sort client-side by 24h change
+      if (view === 'losers') order = 'market_cap_desc'
 
-    if (query) {
-      // Search mode
-      const res = await fetch(`${DEXSCREENER_BASE}/latest/dex/search?q=${encodeURIComponent(query)}`)
-      if (res.ok) {
-        const data = await res.json()
-        pairs = data.pairs || []
+      const res = await fetch(
+        `${CG_BASE}/coins/markets?vs_currency=usd&order=${order}&per_page=${perPage}&page=${page}&sparkline=true&price_change_percentage=1h,24h,7d&locale=en`,
+        { next: { revalidate: 60 } }
+      )
+
+      if (!res.ok) {
+        // Fallback if rate limited
+        return NextResponse.json({ coins: [], source: 'coingecko', error: 'Rate limited, try again in 30s' }, { status: 429 })
       }
-    } else {
-      // Default: get boosted tokens (trending)
-      const res = await fetch(`${DEXSCREENER_BASE}/token-boosts/latest/v1`)
-      if (res.ok) {
-        const boosts = await res.json()
-        // Get details for boosted tokens
-        const tokenAddresses = (Array.isArray(boosts) ? boosts : [])
-          .slice(0, 20)
-          .map((b: any) => b.tokenAddress)
-          .filter(Boolean)
 
-        if (tokenAddresses.length > 0) {
-          // Batch fetch - DexScreener allows comma-separated addresses
-          const batchRes = await fetch(
-            `${DEXSCREENER_BASE}/latest/dex/tokens/${tokenAddresses.slice(0, 10).join(',')}`
-          )
-          if (batchRes.ok) {
-            const data = await batchRes.json()
-            pairs = data.pairs || []
+      let coins = await res.json()
+
+      // Sort for gainers/losers
+      if (view === 'gainers') {
+        coins.sort((a: any, b: any) => (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0))
+      }
+      if (view === 'losers') {
+        coins.sort((a: any, b: any) => (a.price_change_percentage_24h || 0) - (b.price_change_percentage_24h || 0))
+      }
+
+      return NextResponse.json({ coins, source: 'coingecko', page, view })
+    }
+
+    // ─── TRENDING: CoinGecko trending ───
+    if (view === 'trending') {
+      const res = await fetch(`${CG_BASE}/search/trending`, { next: { revalidate: 120 } })
+      if (!res.ok) return NextResponse.json({ coins: [], source: 'coingecko' })
+      const data = await res.json()
+      const coins = (data.coins || []).map((c: any) => ({
+        id: c.item.id,
+        symbol: c.item.symbol,
+        name: c.item.name,
+        image: c.item.small || c.item.thumb,
+        current_price: c.item.data?.price,
+        market_cap: c.item.data?.market_cap,
+        total_volume: c.item.data?.total_volume,
+        price_change_percentage_24h: c.item.data?.price_change_percentage_24h?.usd,
+        sparkline_in_7d: c.item.data?.sparkline ? { price: [] } : undefined,
+        market_cap_rank: c.item.market_cap_rank,
+        score: c.item.score,
+      }))
+      return NextResponse.json({ coins, source: 'coingecko', view })
+    }
+
+    // ─── NEW PAIRS: DexScreener latest boosts ───
+    if (view === 'new') {
+      const res = await fetch(`${DEX_BASE}/token-boosts/latest/v1`, { next: { revalidate: 60 } })
+      if (!res.ok) return NextResponse.json({ coins: [], source: 'dexscreener' })
+      const boosts = await res.json()
+      const tokens = (Array.isArray(boosts) ? boosts : []).slice(0, 30)
+
+      // Get details
+      const addresses = tokens.map((t: any) => t.tokenAddress).filter(Boolean).slice(0, 10)
+      let pairs: any[] = []
+      if (addresses.length > 0) {
+        const detailRes = await fetch(`${DEX_BASE}/latest/dex/tokens/${addresses.join(',')}`)
+        if (detailRes.ok) {
+          const data = await detailRes.json()
+          pairs = data.pairs || []
+        }
+      }
+
+      // Format to match CoinGecko-ish shape
+      const seen = new Set()
+      const coins = pairs
+        .filter((p: any) => {
+          if (seen.has(p.baseToken?.address)) return false
+          seen.add(p.baseToken?.address)
+          return true
+        })
+        .slice(0, 50)
+        .map((p: any) => ({
+          id: p.baseToken?.address,
+          symbol: p.baseToken?.symbol,
+          name: p.baseToken?.name,
+          image: null,
+          current_price: parseFloat(p.priceUsd || '0'),
+          market_cap: p.marketCap || p.fdv || 0,
+          total_volume: p.volume?.h24 || 0,
+          price_change_percentage_24h: p.priceChange?.h24 || 0,
+          price_change_percentage_1h_in_currency: p.priceChange?.h1 || 0,
+          price_change_percentage_7d_in_currency: null,
+          liquidity: p.liquidity?.usd || 0,
+          txns_24h: p.txns?.h24 ? (p.txns.h24.buys + p.txns.h24.sells) : 0,
+          buys_24h: p.txns?.h24?.buys || 0,
+          sells_24h: p.txns?.h24?.sells || 0,
+          pair_created_at: p.pairCreatedAt,
+          chain: p.chainId,
+          dex_url: p.url,
+          is_dex: true,
+        }))
+
+      return NextResponse.json({ coins, source: 'dexscreener', view })
+    }
+
+    // ─── SEARCH ───
+    if (view === 'search' && query) {
+      // Try CoinGecko search first
+      const cgRes = await fetch(`${CG_BASE}/search?query=${encodeURIComponent(query)}`)
+      let coins: any[] = []
+
+      if (cgRes.ok) {
+        const data = await cgRes.json()
+        const ids = (data.coins || []).slice(0, 20).map((c: any) => c.id).join(',')
+        if (ids) {
+          const mkRes = await fetch(`${CG_BASE}/coins/markets?vs_currency=usd&ids=${ids}&sparkline=true&price_change_percentage=1h,24h,7d`)
+          if (mkRes.ok) {
+            coins = await mkRes.json()
           }
         }
       }
 
-      // Fallback: search popular terms if no boosted tokens
-      if (pairs.length === 0) {
-        const fallbackRes = await fetch(`${DEXSCREENER_BASE}/latest/dex/search?q=SOL`)
-        if (fallbackRes.ok) {
-          const data = await fallbackRes.json()
-          pairs = (data.pairs || []).slice(0, 30)
-        }
+      // Also search DexScreener
+      const dexRes = await fetch(`${DEX_BASE}/latest/dex/search?q=${encodeURIComponent(query)}`)
+      if (dexRes.ok) {
+        const dexData = await dexRes.json()
+        const dexCoins = (dexData.pairs || []).slice(0, 20).map((p: any) => ({
+          id: p.baseToken?.address,
+          symbol: p.baseToken?.symbol,
+          name: p.baseToken?.name,
+          image: null,
+          current_price: parseFloat(p.priceUsd || '0'),
+          market_cap: p.marketCap || p.fdv || 0,
+          total_volume: p.volume?.h24 || 0,
+          price_change_percentage_24h: p.priceChange?.h24 || 0,
+          chain: p.chainId,
+          dex_url: p.url,
+          is_dex: true,
+        }))
+        coins = [...coins, ...dexCoins]
       }
+
+      return NextResponse.json({ coins, source: 'mixed', view })
     }
 
-    // Filter by chain if specified
-    if (chain !== 'all') {
-      pairs = pairs.filter((p: any) => p.chainId === chain)
-    }
-
-    // Sort by volume (24h) descending
-    pairs.sort((a: any, b: any) => (b.volume?.h24 || 0) - (a.volume?.h24 || 0))
-
-    // Limit results
-    pairs = pairs.slice(0, 50)
-
-    // Add safety indicators (basic version)
-    pairs = pairs.map((pair: any) => ({
-      ...pair,
-      safetyScore: calculateBasicSafety(pair),
-    }))
-
-    return NextResponse.json({ pairs, count: pairs.length })
+    return NextResponse.json({ coins: [], source: 'none' })
   } catch (error) {
-    console.error('Token fetch error:', error)
-    return NextResponse.json({ pairs: [], count: 0, error: 'Failed to fetch tokens' }, { status: 500 })
+    console.error('API error:', error)
+    return NextResponse.json({ coins: [], error: 'Server error' }, { status: 500 })
   }
-}
-
-function calculateBasicSafety(pair: any): { score: number; flags: string[] } {
-  const flags: string[] = []
-  let score = 50 // Start neutral
-
-  // Liquidity check
-  const liqUsd = pair.liquidity?.usd || 0
-  if (liqUsd > 100000) { score += 15; }
-  else if (liqUsd > 10000) { score += 5; }
-  else if (liqUsd < 1000) { score -= 20; flags.push('LOW_LIQUIDITY') }
-
-  // Volume check
-  const vol24 = pair.volume?.h24 || 0
-  if (vol24 > 100000) score += 10
-  else if (vol24 < 1000) { score -= 10; flags.push('LOW_VOLUME') }
-
-  // Buy/sell ratio check (potential rug signal)
-  const buys24 = pair.txns?.h24?.buys || 0
-  const sells24 = pair.txns?.h24?.sells || 0
-  const totalTxns = buys24 + sells24
-  if (totalTxns > 0) {
-    const buyRatio = buys24 / totalTxns
-    if (buyRatio < 0.2) { score -= 15; flags.push('HEAVY_SELLING') }
-    if (buyRatio > 0.9) { score -= 10; flags.push('SUSPICIOUS_BUY_PATTERN') }
-  }
-
-  // Age check
-  const ageMs = Date.now() - (pair.pairCreatedAt || Date.now())
-  const ageHours = ageMs / (1000 * 60 * 60)
-  if (ageHours < 1) { score -= 15; flags.push('VERY_NEW') }
-  else if (ageHours < 24) { score -= 5; flags.push('NEW_TOKEN') }
-  else if (ageHours > 720) score += 10 // 30+ days
-
-  // Price change check
-  const priceChange24 = pair.priceChange?.h24 || 0
-  if (priceChange24 < -50) { score -= 10; flags.push('DUMPING') }
-  if (priceChange24 > 500) { score -= 5; flags.push('PUMP_ALERT') }
-
-  // Market cap check
-  const mcap = pair.marketCap || pair.fdv || 0
-  if (mcap > 1000000) score += 5
-  if (mcap < 10000 && mcap > 0) { score -= 10; flags.push('MICRO_CAP') }
-
-  // Clamp
-  score = Math.max(0, Math.min(100, score))
-
-  return { score, flags }
 }
