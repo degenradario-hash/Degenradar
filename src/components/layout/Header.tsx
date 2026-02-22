@@ -36,9 +36,9 @@ export default function Header() {
           <Image
             src="/logo_z_tekstem.png"
             alt="DegenRadar"
-            width={160}
-            height={40}
-            className="h-8 lg:h-10 w-auto"
+            width={220}
+            height={44}
+            className="h-[44px] w-auto"
             priority
           />
         </Link>
