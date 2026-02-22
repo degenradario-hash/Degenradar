@@ -34,7 +34,7 @@ export default function Header() {
         {/* Logo — left */}
         <Link href="/" className="shrink-0">
           <Image
-            src="/logo_no_background.png"
+            src="/noobg.png"
             alt="DegenRadar"
             width={200}
             height={80}
