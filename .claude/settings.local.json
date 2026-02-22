@@ -18,7 +18,12 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(where:*)",
       "Bash(where npm:*)",
-      "Bash(where node)"
+      "Bash(where node)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

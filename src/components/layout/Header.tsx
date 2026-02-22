@@ -30,15 +30,15 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[--bg-primary]/90 border-b border-[--border]">
-      <div className="max-w-[1400px] mx-auto px-4 h-14 flex items-center">
+      <div className="max-w-[1400px] mx-auto px-4 h-16 flex items-center">
         {/* Logo — left */}
         <Link href="/" className="shrink-0">
           <Image
             src="/logo_z_tekstem.png"
             alt="DegenRadar"
-            width={220}
-            height={44}
-            className="h-[44px] w-auto"
+            width={280}
+            height={56}
+            className="h-[56px] w-auto"
             priority
           />
         </Link>
