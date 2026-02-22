@@ -35,6 +35,11 @@ export const metadata: Metadata = {
   title: 'DegenRadar | Crypto Intelligence Platform',
   description: 'Real-time crypto markets, memecoin scanner, safety scoring, and on-chain intelligence.',
   keywords: ['crypto', 'memecoin', 'defi', 'scanner', 'safety score', 'degenradar'],
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   openGraph: {
     title: 'DegenRadar',
     description: 'Real-time crypto markets, memecoin scanner, safety scoring.',

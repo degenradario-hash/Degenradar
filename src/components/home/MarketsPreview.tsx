@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { formatPrice, formatBigNumber, formatPercent } from '@/lib/formatters'
 import Sparkline from '@/components/Sparkline'
@@ -20,22 +20,59 @@ interface Coin {
   market_cap_rank: number
 }
 
+const PER_PAGE = 100
+const TOTAL_PAGES = 10 // ~1000 coins max
+
 export default function MarketsPreview() {
   const [coins, setCoins] = useState<Coin[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const tableRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    fetch('/api/tokens?view=top&per_page=20&page=1')
+  const fetchPage = useCallback((page: number) => {
+    setLoading(true)
+    fetch(`/api/tokens?view=top&per_page=${PER_PAGE}&page=${page}`)
       .then(r => r.json())
       .then(data => {
-        setCoins((data.coins || []).slice(0, 20))
+        setCoins(data.coins || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    fetchPage(1)
+  }, [fetchPage])
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > TOTAL_PAGES || page === currentPage) return
+    setCurrentPage(page)
+    fetchPage(page)
+    tableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  // Build page numbers to display
+  const getPageNumbers = (): (number | '...')[] => {
+    const pages: (number | '...')[] = []
+    if (TOTAL_PAGES <= 7) {
+      for (let i = 1; i <= TOTAL_PAGES; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (currentPage > 3) pages.push('...')
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(TOTAL_PAGES - 1, currentPage + 1)
+      for (let i = start; i <= end; i++) pages.push(i)
+      if (currentPage < TOTAL_PAGES - 2) pages.push('...')
+      pages.push(TOTAL_PAGES)
+    }
+    return pages
+  }
+
+  const rangeStart = (currentPage - 1) * PER_PAGE + 1
+  const rangeEnd = rangeStart + coins.length - 1
+
   return (
-    <section className="py-12">
+    <section className="py-12" ref={tableRef}>
       <div className="max-w-[1400px] mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-heading font-bold text-xl lg:text-2xl">
@@ -59,7 +96,7 @@ export default function MarketsPreview() {
             <div className="hidden md:block overflow-x-auto table-container">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-[--text-muted] text-xs border-b border-[#2E2D2F] dark:border-[#2E2D2F]">
+                  <tr className="text-[--text-muted] text-xs border-b border-[--border]">
                     <th className="text-left py-3 px-2 w-10">#</th>
                     <th className="text-left py-3 px-2 w-[180px]">Coin</th>
                     <th className="text-right py-3 px-1">Price</th>
@@ -79,10 +116,10 @@ export default function MarketsPreview() {
                     return (
                       <tr
                         key={coin.id}
-                        className="coin-row border-b border-[#2E2D2F] dark:border-[#2E2D2F] hover:cursor-pointer"
+                        className="coin-row border-b border-[--border] hover:cursor-pointer"
                         onClick={() => window.location.href = `/token/${coin.id}`}
                       >
-                        <td className="py-3 px-2 text-[--text-muted]">{coin.market_cap_rank || i + 1}</td>
+                        <td className="py-3 px-2 text-[--text-muted]">{coin.market_cap_rank || (currentPage - 1) * PER_PAGE + i + 1}</td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-2">
                             {coin.image && (
@@ -122,7 +159,7 @@ export default function MarketsPreview() {
                     href={`/token/${coin.id}`}
                     className="flex items-center gap-3 bg-[--bg-secondary] border border-[--border] rounded-xl p-3"
                   >
-                    <span className="text-xs text-[--text-muted] w-5">{coin.market_cap_rank || i + 1}</span>
+                    <span className="text-xs text-[--text-muted] w-5">{coin.market_cap_rank || (currentPage - 1) * PER_PAGE + i + 1}</span>
                     {coin.image && <img src={coin.image} alt={coin.name} className="w-8 h-8 rounded-full" />}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm truncate">{coin.name}</div>
@@ -138,6 +175,54 @@ export default function MarketsPreview() {
                   </Link>
                 )
               })}
+            </div>
+
+            {/* Pagination controls */}
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2">
+                {/* Previous button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="min-w-[40px] h-[40px] rounded-lg text-sm font-mono border border-[--border] flex items-center justify-center transition-colors hover:border-[--accent] disabled:opacity-30 disabled:hover:border-[--border] disabled:cursor-not-allowed"
+                >
+                  &laquo;
+                </button>
+
+                {/* Page numbers */}
+                {getPageNumbers().map((page, idx) =>
+                  page === '...' ? (
+                    <span key={`dots-${idx}`} className="min-w-[40px] h-[40px] flex items-center justify-center text-[--text-muted] text-sm font-mono">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`min-w-[40px] h-[40px] rounded-lg text-sm font-mono border flex items-center justify-center transition-colors ${
+                        page === currentPage
+                          ? 'bg-[#FFFF00] text-black font-bold border-[#FFFF00]'
+                          : 'border-[--border] hover:border-[--accent]'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+
+                {/* Next button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === TOTAL_PAGES}
+                  className="min-w-[40px] h-[40px] rounded-lg text-sm font-mono border border-[--border] flex items-center justify-center transition-colors hover:border-[--accent] disabled:opacity-30 disabled:hover:border-[--border] disabled:cursor-not-allowed"
+                >
+                  &raquo;
+                </button>
+              </div>
+
+              <span className="text-xs text-[--text-muted] font-mono">
+                Showing {rangeStart}-{rangeEnd} of {TOTAL_PAGES * PER_PAGE}+ coins
+              </span>
             </div>
           </>
         )}

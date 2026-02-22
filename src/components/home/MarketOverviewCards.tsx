@@ -199,7 +199,9 @@ export default function MarketOverviewCards() {
         </div>
 
         {/* Yellow accent divider */}
-        <div className="w-full h-2 bg-[#FFFF00] mt-8 mb-0 rounded-full opacity-80" />
+        <div className="w-full mt-8 mb-0">
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-[#FFFF00] to-transparent" />
+        </div>
       </div>
     </section>
   )

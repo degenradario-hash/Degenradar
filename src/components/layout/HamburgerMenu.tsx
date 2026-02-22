@@ -24,7 +24,7 @@ export default function HamburgerMenu() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-[--border] hover:border-[--accent]"
+        className="w-9 h-9 flex items-center justify-center rounded-lg border border-[--border] hover:border-[--accent] transition-colors"
         aria-label="Open menu"
       >
         <Bars3Icon className="w-5 h-5" />

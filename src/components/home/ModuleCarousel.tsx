@@ -28,26 +28,28 @@ export default function ModuleCarousel() {
           <p className="font-subtitle text-[--text-secondary] text-[16px]">Professional crypto intelligence suite</p>
         </div>
 
-        {/* Outer wrapper: arrows positioned here, OUTSIDE the carousel */}
-        <div className="relative px-0 lg:px-16 xl:px-20 overflow-visible">
-          {/* Custom prev arrow — absolute, outside the Swiper */}
+        {/* Outer wrapper: px-16 creates space for arrows OUTSIDE the card area */}
+        <div className="relative px-0 md:px-16 lg:px-20">
+          {/* Left arrow — positioned OUTSIDE cards in the left margin */}
           <button
             onClick={() => swiperRef.current?.slidePrev()}
-            className="carousel-arrow carousel-arrow-prev"
+            className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-[--bg-secondary] border border-[--border] items-center justify-center text-[--text-primary] text-2xl font-bold cursor-pointer hover:border-[#FFFF00] hover:text-[#FFFF00] transition-colors"
             aria-label="Previous slide"
           >
             &#8249;
           </button>
 
-          {/* Custom next arrow — absolute, outside the Swiper */}
+          {/* Right arrow — positioned OUTSIDE cards in the right margin */}
           <button
             onClick={() => swiperRef.current?.slideNext()}
-            className="carousel-arrow carousel-arrow-next"
+            className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-[--bg-secondary] border border-[--border] items-center justify-center text-[--text-primary] text-2xl font-bold cursor-pointer hover:border-[#FFFF00] hover:text-[#FFFF00] transition-colors"
             aria-label="Next slide"
           >
             &#8250;
           </button>
 
+          {/* Overflow hidden container with vertical padding to prevent border clipping */}
+          <div className="overflow-hidden py-4">
           <Swiper
             modules={[Navigation, Pagination]}
             onSwiper={(swiper) => { swiperRef.current = swiper }}
@@ -70,9 +72,9 @@ export default function ModuleCarousel() {
               <SwiperSlide key={i} className="!h-auto">
                 {({ isActive }) => (
                   <div
-                    className={`bg-[--bg-secondary] border rounded-2xl p-7 min-h-[300px] flex flex-col items-center text-center transition-all duration-300 ease-out ${
+                    className={`bg-[--bg-secondary] border-2 rounded-2xl p-7 min-h-[300px] flex flex-col items-center text-center transition-all duration-300 ease-out ${
                       isActive
-                        ? 'border-[--accent] scale-[1.08]'
+                        ? 'border-[#FFFF00] scale-[1.08]'
                         : 'border-[--border] opacity-70 scale-[0.92]'
                     }`}
                     style={isActive ? {
@@ -99,68 +101,18 @@ export default function ModuleCarousel() {
               </SwiperSlide>
             ))}
           </Swiper>
+          </div>
         </div>
       </div>
 
       <style jsx global>{`
-        .module-carousel {
-          overflow: visible !important;
-        }
         .module-carousel .swiper-wrapper {
           align-items: center;
           overflow: visible !important;
         }
-        /* Hide default Swiper arrows — we use custom buttons outside */
         .module-carousel .swiper-button-next,
         .module-carousel .swiper-button-prev {
           display: none !important;
-        }
-        /* Custom carousel arrows — positioned on the OUTER wrapper */
-        .carousel-arrow {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 20;
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          color: var(--text-primary);
-          font-size: 24px;
-          font-weight: bold;
-          line-height: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-        .carousel-arrow:hover {
-          border-color: var(--accent);
-          color: var(--accent);
-          background: var(--bg-tertiary);
-        }
-        .carousel-arrow-prev {
-          left: -8px;
-        }
-        .carousel-arrow-next {
-          right: -8px;
-        }
-        /* Desktop: arrows comfortably outside */
-        @media (min-width: 1024px) {
-          .carousel-arrow-prev {
-            left: -8px;
-          }
-          .carousel-arrow-next {
-            right: -8px;
-          }
-        }
-        /* Mobile: hide arrows, rely on swipe */
-        @media (max-width: 767px) {
-          .carousel-arrow {
-            display: none !important;
-          }
         }
         .module-carousel .swiper-pagination-bullet {
           background: var(--text-muted);

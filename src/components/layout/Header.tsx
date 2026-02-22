@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import ThemeToggle from './ThemeToggle'
@@ -31,9 +32,15 @@ export default function Header() {
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[--bg-primary]/90 border-b border-[--border]">
       <div className="max-w-[1400px] mx-auto px-4 h-14 flex items-center">
         {/* Logo — left */}
-        <Link href="/" className="flex items-center gap-0.5 shrink-0">
-          <span className="font-heading font-bold text-xl tracking-tight">DEGEN</span>
-          <span className="font-heading font-bold text-xl tracking-tight text-[--accent]">RADAR</span>
+        <Link href="/" className="shrink-0">
+          <Image
+            src="/logo_z_tekstem.png"
+            alt="DegenRadar"
+            width={160}
+            height={40}
+            className="h-8 lg:h-10 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop Nav — centered absolutely */}

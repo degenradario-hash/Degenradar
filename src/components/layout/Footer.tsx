@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 const PRODUCT_LINKS = [
   { href: '/markets', label: 'Markets' },
@@ -28,9 +29,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div>
-            <Link href="/" className="inline-flex items-center gap-0.5 mb-3">
-              <span className="font-heading font-bold text-lg">DEGEN</span>
-              <span className="font-heading font-bold text-lg text-[--accent]">RADAR</span>
+            <Link href="/" className="inline-block mb-3">
+              <Image
+                src="/logo_z_tekstem.png"
+                alt="DegenRadar"
+                width={128}
+                height={32}
+                className="h-8 w-auto"
+              />
             </Link>
             <p className="text-sm text-[--text-muted] mb-4">
               Crypto intelligence platform for degens who do their own research.
