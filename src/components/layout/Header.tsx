@@ -30,12 +30,12 @@ export default function Header() {
         <div className="flex-1 bg-transparent"></div>
       </div>
 
-      {/* LOGO IMAGE - Unchained and massive */}
+      {/* LOGO IMAGE - Clean, naturally fitted without CSS hacks */}
       <div className="absolute top-0 left-0 w-[260px] md:w-[320px] h-24 flex items-center justify-center pointer-events-none">
-        {/* Added padding (p-3) so it doesn't scrape the physical borders, but fills the box */}
-        <Link href="/" className="pointer-events-auto w-full h-full flex items-center justify-start p-3 pl-6">
+        {/* Natural padding restored so it breathes inside the box */}
+        <Link href="/" className="pointer-events-auto w-full h-full flex items-center justify-start py-2 pl-6 pr-4">
           <Image
-            src="/noobg.png"
+            src="/nobg3.png"
             alt="DegenRadar Logo"
             width={300}
             height={96}
