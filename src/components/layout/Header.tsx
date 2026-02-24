@@ -3,39 +3,42 @@ import Link from 'next/link';
 
 export default function Header() {
   return (
-    <header className="relative z-50 overflow-visible bg-[#0A0A0F] border-b border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="flex justify-between items-center h-16">
+    <header className="w-full bg-[#0A0A0F]">
+      {/* Główny kontener trzymający wysokość całości (h-24) */}
+      <div className="relative w-full h-24">
 
-          {/* KONTENER LOGO - Magia "Notch" */}
-          <div className="relative flex-shrink-0 flex items-center z-50 h-24 -mt-6">
-            <Link href="/" className="block">
-              <Image
-                src="/logo_no_background.png"
-                alt="DegenRadar Logo"
-                width={200}
-                height={80}
-                className="h-20 w-auto object-contain drop-shadow-lg"
-                priority
-              />
-            </Link>
-          </div>
+        {/* 1. Tło i dolna linia całego paska nawigacji (h-16) */}
+        {/* Ta linia ciągnie się od prawej do lewej, ale jej lewa część zostanie przykryta przez logo */}
+        <div className="absolute top-0 left-0 w-full h-16 border-b border-gray-400 bg-[#0A0A0F] z-10"></div>
 
-          {/* Prawa strona nawigacji */}
-          <div className="flex items-center space-x-6">
-            <nav className="hidden md:flex space-x-6">
-              <Link href="/markets" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Markets</Link>
-              <Link href="/dexscan" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">DexScan</Link>
-              <Link href="/news" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">News</Link>
-            </nav>
-
-            <button className="bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-bold text-sm transition-colors">
-              Connect
-            </button>
-          </div>
-
+        {/* 2. Pudełko na LOGO - wyższe (h-24) */}
+        {/* Leży na wierzchu, ma swoje obramowanie (dół i prawy bok + zaokrąglenie). Czarne tło maskuje pasek pod nim! */}
+        <div className="absolute top-0 left-0 h-24 w-[280px] md:w-[320px] bg-[#0A0A0F] border-b border-r border-gray-400 rounded-br-2xl flex items-center justify-center z-30">
+          <Link href="/" className="block w-full px-6">
+            <Image
+              src="/noobg.png"
+              alt="DegenRadar Logo"
+              width={240}
+              height={80}
+              className="h-16 w-auto object-contain drop-shadow-lg"
+              priority
+            />
+          </Link>
         </div>
+
+        {/* 3. Kontener na linki - przesunięty w prawo, żeby nie wchodził pod logo */}
+        <div className="absolute top-0 right-0 h-16 w-[calc(100%-280px)] md:w-[calc(100%-320px)] flex items-center justify-between px-8 z-20">
+          <nav className="hidden md:flex space-x-10">
+            <Link href="/markets" className="text-xl font-bold text-white hover:text-yellow-400 transition-colors">Markets</Link>
+            <Link href="/exchanges" className="text-xl font-bold text-white hover:text-yellow-400 transition-colors">Exchanges</Link>
+            <Link href="/dexscan" className="text-xl font-bold text-white hover:text-yellow-400 transition-colors">DexScan</Link>
+          </nav>
+
+          <button className="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-2 rounded-md font-bold text-sm transition-colors ml-auto">
+            Connect
+          </button>
+        </div>
+
       </div>
     </header>
   );
