@@ -30,15 +30,16 @@ export default function Header() {
         <div className="flex-1 bg-transparent"></div>
       </div>
 
-      {/* LOGO IMAGE - Absolute positioned over the boxes we created above */}
+      {/* LOGO IMAGE - Unchained and massive */}
       <div className="absolute top-0 left-0 w-[260px] md:w-[320px] h-24 flex items-center justify-center pointer-events-none">
-        <Link href="/" className="pointer-events-auto">
+        {/* Added padding (p-3) so it doesn't scrape the physical borders, but fills the box */}
+        <Link href="/" className="pointer-events-auto w-full h-full flex items-center justify-start p-3 pl-6">
           <Image
             src="/noobg.png"
             alt="DegenRadar Logo"
-            width={240}
-            height={80}
-            className="w-auto h-16 object-contain drop-shadow-lg"
+            width={300}
+            height={96}
+            className="w-full h-full object-contain drop-shadow-lg"
             unoptimized={true} 
             priority
           />
