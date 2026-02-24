@@ -24,13 +24,13 @@ export default function Header() {
         <div className="flex-1 bg-transparent"></div>
       </div>
       <div className="absolute top-0 left-0 w-[450px] md:w-[520px] h-[128px] flex items-center pointer-events-none">
-        <Link href="/" className="pointer-events-auto flex items-center h-full pl-4 pr-6">
+        <Link href="/" className="pointer-events-auto flex items-center h-full w-full pl-2 pr-2">
           <Image
             src="/nobg3.png"
             alt="DegenRadar"
-            width={480}
-            height={196}
-            className="h-[100px] md:h-[112px] w-auto object-contain drop-shadow-lg"
+            width={500}
+            height={204}
+            className="w-full h-auto max-h-[120px] object-contain drop-shadow-lg"
             priority
           />
         </Link>
