@@ -64,21 +64,56 @@ export default function WaitlistPage() {
         <p className={`relative z-10 text-sm text-center mt-3 ${status === 'success' ? 'text-[#FFFF00]' : 'text-red-400'}`}>{message}</p>
       )}
 
-      <div className="relative z-10 mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl w-full">
+      <div className="relative z-10 mt-16 grid grid-cols-2 md:grid-cols-5 gap-4 max-w-5xl w-full">
         <div className="text-center p-4">
           <span className="text-3xl mb-2 block">🔍</span>
-          <h3 className="text-white font-bold mb-1">Memecoin Scanner</h3>
-          <p className="text-gray-500 text-sm">Safety scores & rug detection before you ape in</p>
+          <h3 className="text-white font-bold text-sm mb-1">Memecoin Scanner</h3>
+          <p className="text-gray-500 text-xs">Safety scores & rug detection</p>
         </div>
         <div className="text-center p-4">
           <span className="text-3xl mb-2 block">🐋</span>
-          <h3 className="text-white font-bold mb-1">Whale Tracker</h3>
-          <p className="text-gray-500 text-sm">Real-time alerts when smart money moves</p>
+          <h3 className="text-white font-bold text-sm mb-1">Whale Mirror Mode</h3>
+          <p className="text-gray-500 text-xs">Copy whale trades in real-time</p>
+        </div>
+        <div className="text-center p-4">
+          <span className="text-3xl mb-2 block">🖨️</span>
+          <h3 className="text-white font-bold text-sm mb-1">Stablecoin Printer</h3>
+          <p className="text-gray-500 text-xs">USDT/USDC minting alerts</p>
+        </div>
+        <div className="text-center p-4">
+          <span className="text-3xl mb-2 block">💰</span>
+          <h3 className="text-white font-bold text-sm mb-1">Safe Yield</h3>
+          <p className="text-gray-500 text-xs">DeFi yields vs banks compared</p>
         </div>
         <div className="text-center p-4">
           <span className="text-3xl mb-2 block">⚡</span>
-          <h3 className="text-white font-bold mb-1">DeFi Tools</h3>
-          <p className="text-gray-500 text-sm">One-click strategies that save you hours</p>
+          <h3 className="text-white font-bold text-sm mb-1">One-Click DeFi</h3>
+          <p className="text-gray-500 text-xs">Complex DeFi strategies simplified</p>
+        </div>
+        <div className="text-center p-4">
+          <span className="text-3xl mb-2 block">🎯</span>
+          <h3 className="text-white font-bold text-sm mb-1">Prediction Markets</h3>
+          <p className="text-gray-500 text-xs">Polymarket & Kalshi bets</p>
+        </div>
+        <div className="text-center p-4">
+          <span className="text-3xl mb-2 block">📡</span>
+          <h3 className="text-white font-bold text-sm mb-1">DePIN Hub</h3>
+          <p className="text-gray-500 text-xs">Passive income from nodes</p>
+        </div>
+        <div className="text-center p-4">
+          <span className="text-3xl mb-2 block">💎</span>
+          <h3 className="text-white font-bold text-sm mb-1">Fee Tracker</h3>
+          <p className="text-gray-500 text-xs">Cashback vs Creator Fee stats</p>
+        </div>
+        <div className="text-center p-4">
+          <span className="text-3xl mb-2 block">🏆</span>
+          <h3 className="text-white font-bold text-sm mb-1">Tier Scanner</h3>
+          <p className="text-gray-500 text-xs">Auto token classification</p>
+        </div>
+        <div className="text-center p-4">
+          <span className="text-3xl mb-2 block">💼</span>
+          <h3 className="text-white font-bold text-sm mb-1">Crypto Jobs</h3>
+          <p className="text-gray-500 text-xs">Web3 job board</p>
         </div>
       </div>
 
